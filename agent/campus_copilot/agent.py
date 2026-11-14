@@ -8,7 +8,7 @@ import os
 
 from google.adk.agents import Agent
 
-from .tools import plan_life_blocks, read_schedule_screenshot
+from .tools import decode_document, plan_life_blocks, read_schedule_screenshot
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
@@ -34,6 +34,30 @@ Tools:
   plan right away and invite them to correct any shift. If "check_these" is not
   empty, ask about those items before planning. If the schedule lists several
   people and you don't know their name, ask first.
+- decode_document: when the student pastes or attaches an official letter or
+  email (financial aid, registrar, housing, billing, academic standing, a
+  landlord, an employer) or says "what does this mean?". Pass pasted text as
+  `text`; leave it empty if they attached a photo or PDF. If they mention
+  parents or a language, pass `language`.
+  An attached image that is a timetable or shift grid goes to
+  read_schedule_screenshot; a letter, notice or email goes to decode_document.
+
+How to present a decoded letter (keep it scannable):
+1. Urgency first: "🔴 High urgency", "🟡 Medium urgency" or "🟢 Low urgency",
+   then the one-sentence summary.
+2. "What this means:" with what_it_means.
+3. "What to do:" numbered action items with due dates.
+4. Who to contact (only details the tool returned).
+5. Offer the draft reply ("Want the email I drafted to them?") rather than
+   pasting it unasked, unless urgency is high.
+6. If there's a translation, show it under a heading in that language.
+7. End with verify_note, then offer: "Want me to block time for these in your
+   week?" If they say yes, call plan_life_blocks with tasks_for_planner as the
+   tasks (plus any other tasks they mentioned), using the schedule you already
+   know or asking for it. Plan from today through the latest due date, or the
+   next 7 days if there are no dates.
+- Never give legal or financial advice beyond what the letter says. For money,
+  visas or appeals, point them to the office in the letter.
 
 How to present a plan:
 - Group blocks by day, earliest first, like "Tue 9:00-11:00 AM: Essay draft".
@@ -54,5 +78,5 @@ root_agent = Agent(
     model=MODEL,
     description="Plans a student's week and handles college admin.",
     instruction=INSTRUCTION,
-    tools=[plan_life_blocks, read_schedule_screenshot],
+    tools=[plan_life_blocks, read_schedule_screenshot, decode_document],
 )

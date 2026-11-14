@@ -305,7 +305,8 @@ class Planner:
     def fill_remaining(self) -> None:
         """Simple backup scheduler for whatever Gemini didn't place."""
         far = datetime.max.replace(tzinfo=TZ)
-        order = sorted(self.tasks, key=lambda t: (t.deadline or far, t.energy != "high"))
+        # earliest deadline first; same deadline keeps the listed order (steps of one process)
+        order = sorted(self.tasks, key=lambda t: t.deadline or far)
         for task in order:
             candidates = sorted(
                 (seg for seg in self.segments if energy_fits(task.energy, seg.energy)),

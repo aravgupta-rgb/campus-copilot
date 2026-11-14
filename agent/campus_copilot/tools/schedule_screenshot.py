@@ -16,6 +16,7 @@ from google.adk.tools import ToolContext
 from google.genai import types
 from pydantic import BaseModel
 
+from .attachments import latest_attachment
 from .life_blocks import _gemini
 
 logger = logging.getLogger(__name__)
@@ -55,23 +56,6 @@ Person's name (may be empty): {name}
 """
 
 
-def _latest_image(tool_context: ToolContext) -> types.Part | None:
-    contents = []
-    if tool_context.user_content:
-        contents.append(tool_context.user_content)
-    try:
-        events = tool_context.get_invocation_context().session.events
-        contents += [e.content for e in reversed(events) if e.author == "user" and e.content]
-    except Exception:  # older/newer ADK shapes: the current message is enough
-        pass
-    for content in contents:
-        for part in content.parts or []:
-            blob = part.inline_data
-            if blob and blob.mime_type and blob.mime_type.startswith("image/"):
-                return part
-    return None
-
-
 def _to_fixed(item: ScheduleItem) -> dict:
     kind = "other" if item.kind == "class" else item.kind
     if item.date:
@@ -100,7 +84,7 @@ async def read_schedule_screenshot(tool_context: ToolContext, person_name: str =
         plan_life_blocks as profile["fixed"]; "check_these": items read with low
         confidence that the student should confirm; and "notes".
     """
-    image = _latest_image(tool_context)
+    image = latest_attachment(tool_context, ("image/",))
     if image is None:
         return {"status": "error",
                 "message": "No image found. Ask the student to attach a screenshot of their schedule."}

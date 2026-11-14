@@ -59,6 +59,8 @@ Put each task into the FREE SLOTS below. Rules:
 - Low-focus chores (energy "low") go in "low" or "medium" slots first.
 - A task can be split into several blocks of 30 to 120 minutes. Total time per task must equal its minutes.
 - Finish every task before the start of its due date. Spread work across days; don't stack everything on one day.
+- Tasks are listed in order. When tasks share a due date they are steps of one process:
+  schedule them in the listed order (step 1 before step 2).
 - Start blocks on :00, :15, :30 or :45.
 - "reason" is one short, friendly sentence to the student about why this slot works.
 

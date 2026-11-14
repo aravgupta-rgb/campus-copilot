@@ -32,14 +32,19 @@ Life Blocker returns a list of these as proposed blocks; Decode returns one per 
   "urgency": "high",
   "action_items": [{ "task": "Submit the verification worksheet", "due": "2026-12-01" }],
   "deadlines": ["<Event objects>"],
-  "contact": { "name": "Financial Aid Office", "email": "finaid@example.edu" },
+  "contact": { "name": "Financial Aid Office", "email": "finaid@example.edu", "phone": "(831) 555-0142" },
   "draft_reply": "Hi, I received your notice about...",
-  "translation": { "language": "Spanish", "text": "..." }
+  "translation": { "language": "Spanish", "text": "..." },
+  "verify_note": "Confirm these details with the Financial Aid Office.",
+  "tasks_for_planner": [{ "title": "Submit the verification worksheet", "minutes": 45, "energy": "high", "due": "2026-12-01" }]
 }
 ```
 
 - `urgency` is `"low"`, `"medium"` or `"high"`.
-- `contact` and `translation` can be `null`.
+- `contact` and `translation` can be `null`. `contact.phone` is only present if the letter has one.
+- `deadlines` are Events with `source: "document"`; no time in the letter means 5:00 PM.
+- `tasks_for_planner` drops straight into LifeProfile `tasks` for `plan_life_blocks`.
+- Tool status can also be `"error"` or `"not_a_letter"` with a `message`.
 
 ## LifeProfile
 
