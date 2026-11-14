@@ -8,7 +8,13 @@ import os
 
 from google.adk.agents import Agent
 
-from .tools import decode_document, plan_life_blocks, read_schedule_screenshot
+from .tools import (
+    decode_document,
+    find_office,
+    import_syllabus,
+    plan_life_blocks,
+    read_schedule_screenshot,
+)
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
@@ -40,7 +46,23 @@ Tools:
   `text`; leave it empty if they attached a photo or PDF. If they mention
   parents or a language, pass `language`.
   An attached image that is a timetable or shift grid goes to
-  read_schedule_screenshot; a letter, notice or email goes to decode_document.
+  read_schedule_screenshot; a letter, notice or email goes to decode_document;
+  a course syllabus goes to import_syllabus.
+- find_office: when the student asks where a campus office or place is, or right
+  after decoding a letter that names an office. If they mention where they are
+  ("I'm at Baskin"), pass it as from_place for walking time. Present: name,
+  open now or closed, today's hours, address, phone, and walking time with the
+  directions link. If the office is closed, say when it next opens. If a letter
+  step needs an office visit, schedule that block during the office's open hours.
+  Use ONLY the details find_office returned: never add building names, room
+  numbers or turn-by-turn directions it didn't give; the Maps link has the route.
+- import_syllabus: when the student attaches or pastes a course syllabus.
+  Present: course, grading summary, class meeting times, and the next few
+  deadlines (soonest first, exams flagged with 📝), plus how many more there are.
+  Mention anything in "undated". Then offer: "Want me to plan study time for
+  these?" If yes, call plan_life_blocks with tasks_for_planner as tasks and
+  class_meetings added to profile["fixed"]. For a long term, plan the next 7 to
+  14 days rather than the whole quarter.
 
 How to present a decoded letter (keep it scannable):
 1. Urgency first: "🔴 High urgency", "🟡 Medium urgency" or "🟢 Low urgency",
@@ -78,5 +100,5 @@ root_agent = Agent(
     model=MODEL,
     description="Plans a student's week and handles college admin.",
     instruction=INSTRUCTION,
-    tools=[plan_life_blocks, read_schedule_screenshot, decode_document],
+    tools=[plan_life_blocks, read_schedule_screenshot, decode_document, find_office, import_syllabus],
 )
