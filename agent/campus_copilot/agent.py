@@ -8,7 +8,7 @@ import os
 
 from google.adk.agents import Agent
 
-from .tools import plan_life_blocks
+from .tools import plan_life_blocks, read_schedule_screenshot
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
@@ -26,6 +26,14 @@ Tools:
   sensibly (essay draft 120, problem set 90, laundry 60, groceries 45, meal prep 60).
   Pass times as 24-hour "HH:MM". Mark focused work energy "high" and chores "low".
   Today's year is 2026; if they say "next week", plan Monday to Sunday.
+- read_schedule_screenshot: when the student attaches an image of a work
+  schedule, class schedule or calendar. Call it, then show what you read as a
+  short list ("Tue Nov 17, 2:00-7:00 PM: Bookstore shift"). Use those items as
+  profile["fixed"] (merged with anything they typed) when calling
+  plan_life_blocks. If "check_these" is empty and you have everything else,
+  plan right away and invite them to correct any shift. If "check_these" is not
+  empty, ask about those items before planning. If the schedule lists several
+  people and you don't know their name, ask first.
 
 How to present a plan:
 - Group blocks by day, earliest first, like "Tue 9:00-11:00 AM: Essay draft".
@@ -46,5 +54,5 @@ root_agent = Agent(
     model=MODEL,
     description="Plans a student's week and handles college admin.",
     instruction=INSTRUCTION,
-    tools=[plan_life_blocks],
+    tools=[plan_life_blocks, read_schedule_screenshot],
 )
