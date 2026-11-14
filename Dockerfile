@@ -6,8 +6,11 @@ WORKDIR /web
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
-# Same origin as the API in production
-ENV VITE_API_URL=/
+# Same origin as the API in production. Pick the design at build time:
+#   bold/default = orange (5173) · bold/navy = navy (5175) · aurora/default = ocean (5174)
+ARG VITE_SKIN=bold
+ARG VITE_PALETTE=navy
+ENV VITE_API_URL=/ VITE_SKIN=${VITE_SKIN} VITE_PALETTE=${VITE_PALETTE}
 RUN npm run build
 
 # 2) Python server with the ADK agents

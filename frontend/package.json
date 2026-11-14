@@ -4,11 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "VITE_SKIN=bold vite",
-    "build": "VITE_SKIN=${VITE_SKIN:-bold} vite build",
+    "dev": "VITE_SKIN=bold VITE_PALETTE=default vite",
+    "build": "VITE_SKIN=${VITE_SKIN:-bold} VITE_PALETTE=${VITE_PALETTE:-default} vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "dev:aurora": "VITE_SKIN=aurora vite --port 5174 --strictPort"
+    "dev:aurora": "VITE_SKIN=aurora VITE_PALETTE=default vite --port 5174 --strictPort",
+    "dev:navy": "VITE_SKIN=bold VITE_PALETTE=navy vite --port 5175 --strictPort"
   },
   "dependencies": {
     "react": "^19.1.0",

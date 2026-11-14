@@ -1,32 +1,32 @@
 /* Design B · "Aurora"
-   Elegant serif headlines with italic accents, sentence case, an indigo → violet → peach
+   Elegant serif headlines with italic accents, sentence case, an blue → teal → emerald
    gradient, aurora glows behind frosted-glass cards, softer and rounder shapes. */
 
 :root[data-skin="aurora"],
 :root[data-skin="aurora"][data-theme="light"] {
-  --bg: #f6f5fb;
-  --surface: rgba(255, 255, 255, 0.78);
-  --surface-2: #ecebf6;
-  --ink: #15142b;
-  --muted: #4c4a66;
-  --faint: #77758f;
-  --line: rgba(21, 20, 43, 0.1);
-  --line-strong: rgba(21, 20, 43, 0.45);
-  --accent: #5b5bf7;
-  --accent-ink: #4338ca;
-  --accent-tint: rgba(91, 91, 247, 0.1);
-  --accent-line: rgba(91, 91, 247, 0.28);
-  --blue: #2f80ed;
-  --blue-tint: rgba(47, 128, 237, 0.12);
-  --glass: rgba(255, 255, 255, 0.62);
-  --glass-line: rgba(21, 20, 43, 0.08);
-  --shadow: 0 18px 50px rgba(48, 40, 120, 0.12);
-  --banner-from: #1b1a3d;
-  --banner-to: #5b3cc4;
-  --grad: linear-gradient(120deg, #5b5bf7 0%, #a855f7 52%, #ff8a65 100%);
-  --aurora-1: rgba(91, 91, 247, 0.22);
-  --aurora-2: rgba(168, 85, 247, 0.18);
-  --aurora-3: rgba(255, 138, 101, 0.18);
+  --bg: #f3f7f8;
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-2: #e6eef0;
+  --ink: #0f1d26;
+  --muted: #44565f;
+  --faint: #6e7f87;
+  --line: rgba(15, 29, 38, 0.1);
+  --line-strong: rgba(15, 29, 38, 0.45);
+  --accent: #0e7490;
+  --accent-ink: #0b5f75;
+  --accent-tint: rgba(14, 116, 144, 0.1);
+  --accent-line: rgba(14, 116, 144, 0.28);
+  --blue: #2563eb;
+  --blue-tint: rgba(37, 99, 235, 0.11);
+  --glass: rgba(255, 255, 255, 0.64);
+  --glass-line: rgba(15, 29, 38, 0.08);
+  --shadow: 0 18px 50px rgba(15, 40, 60, 0.12);
+  --banner-from: #0f1d26;
+  --banner-to: #0e5a6b;
+  --grad: linear-gradient(120deg, #2563eb 0%, #0891b2 50%, #10b981 100%);
+  --aurora-1: rgba(37, 99, 235, 0.16);
+  --aurora-2: rgba(8, 145, 178, 0.16);
+  --aurora-3: rgba(16, 185, 129, 0.14);
   --display: "Instrument Serif", Georgia, serif;
   --body: "Plus Jakarta Sans", system-ui, sans-serif;
   --label: "Plus Jakarta Sans", system-ui, sans-serif;
@@ -36,26 +36,29 @@
 }
 
 :root[data-skin="aurora"][data-theme="dark"] {
-  --bg: #0a0a18;
+  --bg: #061016;
   --surface: rgba(255, 255, 255, 0.05);
   --surface-2: rgba(255, 255, 255, 0.08);
-  --ink: #f1f0fb;
-  --muted: #b7b5d1;
-  --faint: #8b89a8;
-  --line: rgba(241, 240, 251, 0.1);
-  --line-strong: rgba(241, 240, 251, 0.5);
-  --accent: #8b8bff;
-  --accent-ink: #b4b4ff;
-  --accent-tint: rgba(139, 139, 255, 0.12);
-  --accent-line: rgba(139, 139, 255, 0.32);
-  --glass: rgba(18, 18, 38, 0.62);
-  --glass-line: rgba(241, 240, 251, 0.08);
+  --ink: #eef6f7;
+  --muted: #a7bcc2;
+  --faint: #7d9399;
+  --line: rgba(238, 246, 247, 0.1);
+  --line-strong: rgba(238, 246, 247, 0.5);
+  --accent: #2dd4bf;
+  --accent-ink: #5eead4;
+  --accent-tint: rgba(45, 212, 191, 0.12);
+  --accent-line: rgba(45, 212, 191, 0.32);
+  --blue: #60a5fa;
+  --blue-tint: rgba(96, 165, 250, 0.13);
+  --glass: rgba(8, 20, 28, 0.64);
+  --glass-line: rgba(238, 246, 247, 0.08);
   --shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
-  --banner-from: #17163a;
-  --banner-to: #4c2fb0;
-  --aurora-1: rgba(91, 91, 247, 0.28);
-  --aurora-2: rgba(168, 85, 247, 0.2);
-  --aurora-3: rgba(255, 138, 101, 0.12);
+  --banner-from: #0b1a22;
+  --banner-to: #0e5a6b;
+  --grad: linear-gradient(120deg, #60a5fa 0%, #22d3ee 50%, #34d399 100%);
+  --aurora-1: rgba(37, 99, 235, 0.24);
+  --aurora-2: rgba(8, 145, 178, 0.18);
+  --aurora-3: rgba(16, 185, 129, 0.12);
 }
 
 /* aurora background */
@@ -108,7 +111,7 @@
 
 /* buttons: gradient primary, glass ghost */
 [data-skin="aurora"] .pill { text-transform: none; letter-spacing: 0; font-family: var(--body); font-weight: 600; font-size: 14.5px; }
-[data-skin="aurora"] .pill.primary { background: var(--grad); color: #fff; box-shadow: 0 8px 22px rgba(91, 91, 247, 0.28); }
+[data-skin="aurora"] .pill.primary { background: var(--grad); color: #fff; box-shadow: 0 8px 22px rgba(8, 145, 178, 0.28); }
 [data-skin="aurora"] .pill.ghost { background: var(--surface); backdrop-filter: blur(10px); }
 
 /* glass surfaces */
@@ -128,18 +131,18 @@
 [data-skin="aurora"] .bubble-user { background: var(--grad); color: #fff; }
 [data-skin="aurora"] .brand-mark, [data-skin="aurora"] .avatar { background: var(--grad); box-shadow: none; }
 [data-skin="aurora"] .brand-mark path, [data-skin="aurora"] .avatar path { fill: #fff; }
-[data-skin="aurora"] .live-dot { background: #a855f7; box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.25); }
-[data-skin="aurora"] .banner .label { color: #c9c3ff; }
+[data-skin="aurora"] .live-dot { background: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25); }
+[data-skin="aurora"] .banner .label { color: #a5f3fc; }
 [data-skin="aurora"] .block { border-left-width: 0; box-shadow: inset 3px 0 0 var(--blue); }
-[data-skin="aurora"] .block.high { box-shadow: inset 3px 0 0 #a855f7; }
-[data-skin="aurora"] .block.medium { box-shadow: inset 3px 0 0 #ff8a65; }
-[data-skin="aurora"] .chip.high { background: rgba(168, 85, 247, 0.12); color: #8b3fd9; }
-[data-skin="aurora"][data-theme="dark"] .chip.high { color: #d3a6ff; }
+[data-skin="aurora"] .block.high { box-shadow: inset 3px 0 0 #0891b2; }
+[data-skin="aurora"] .block.medium { box-shadow: inset 3px 0 0 #f59e0b; }
+[data-skin="aurora"] .chip.high { background: rgba(8, 145, 178, 0.12); color: #0e7490; }
+[data-skin="aurora"][data-theme="dark"] .chip.high { color: #67e8f9; }
 [data-skin="aurora"] .offer::after { background: var(--grad); }
-[data-skin="aurora"] .urgency.high { color: #ffb3c1; }
-[data-skin="aurora"] .urgency.high i { background: #ff5d7a; box-shadow: 0 0 0 4px rgba(255, 93, 122, 0.25); }
-[data-skin="aurora"] .steps .n { color: #c9c3ff; }
-[data-skin="aurora"] .orb span { background: radial-gradient(circle at 35% 30%, #ffd6c9, #a855f7 50%, #3b2ea8); }
+[data-skin="aurora"] .urgency.high { color: #fca5a5; }
+[data-skin="aurora"] .urgency.high i { background: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25); }
+[data-skin="aurora"] .steps .n { color: #a5f3fc; }
+[data-skin="aurora"] .orb span { background: radial-gradient(circle at 35% 30%, #cffafe, #0891b2 50%, #1e3a8a); }
 [data-skin="aurora"] .how { border-top: 0; gap: 14px; }
 [data-skin="aurora"] .how li, [data-skin="aurora"] .how li + li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; backdrop-filter: blur(16px); }
 [data-skin="aurora"] .day { background: var(--surface-2); }

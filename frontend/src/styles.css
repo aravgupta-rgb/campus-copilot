@@ -444,3 +444,30 @@ details.more pre { white-space: pre-wrap; font-family: var(--body); font-size: 1
   .nav-actions .pill.primary { padding: 9px 12px; }
   .composer-hero .pill { padding: 10px 12px; }
 }
+
+/* =====================================================================
+   Navy palette for the Bold design (localhost:5175):
+   same layout, type and black; navy blue instead of signal orange.
+   ===================================================================== */
+:root[data-skin="bold"][data-palette="navy"],
+:root[data-skin="bold"][data-palette="navy"][data-theme="light"] {
+  --accent: #1e3a8a;
+  --accent-ink: #1e3a8a;
+  --accent-tint: #e7edfb;
+  --accent-line: rgba(30, 58, 138, 0.24);
+  --banner-to: #10285f;
+}
+:root[data-skin="bold"][data-palette="navy"][data-theme="dark"] {
+  --accent: #4f7cff;
+  --accent-ink: #9db7ff;
+  --accent-tint: rgba(79, 124, 255, 0.13);
+  --accent-line: rgba(79, 124, 255, 0.34);
+  --banner-to: #13306e;
+}
+[data-skin="bold"][data-palette="navy"] .pill.primary { color: #fff; }
+[data-skin="bold"][data-palette="navy"] .live-dot { box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.28); }
+[data-skin="bold"][data-palette="navy"] .banner .label,
+[data-skin="bold"][data-palette="navy"] .steps .n { color: #9db7ff; }
+[data-skin="bold"][data-palette="navy"] .brand-mark path,
+[data-skin="bold"][data-palette="navy"] .avatar path { fill: #4f7cff; }
+[data-skin="bold"][data-palette="navy"] .orb span { background: radial-gradient(circle at 35% 30%, #c7d7ff, #2f5bd8 55%, #0b1d4a); }
