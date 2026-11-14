@@ -11,7 +11,13 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
+        ws: true, // live voice websocket (/run_live)
         rewrite: (p) => p.replace(/^\/api/, ''),
+        // The agent server rejects websocket Origins it doesn't know; this proxy is
+        // local and same-machine, so forward the voice socket without one.
+        configure: (proxy) => {
+          proxy.on('proxyReqWs', (proxyReq) => proxyReq.removeHeader('origin'))
+        },
       },
     },
   },

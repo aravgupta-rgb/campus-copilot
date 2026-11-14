@@ -1,0 +1,20 @@
+# Files NOT uploaded to Cloud Build. Secrets first.
+.env
+.env.*
+!.env.example
+*.pem
+credentials*.json
+service-account*.json
+
+.git
+.gitignore
+.gcloudignore
+**/__pycache__/
+**/.pytest_cache/
+.venv/
+**/node_modules/
+frontend/dist/
+**/.adk/
+*.db
+.DS_Store
+demo/

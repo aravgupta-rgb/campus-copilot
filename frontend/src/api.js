@@ -13,8 +13,17 @@ function userId() {
 }
 export const USER = userId()
 
-export async function createSession() {
-  const r = await fetch(`${BASE}/apps/${APP}/users/${USER}/sessions`, {
+export const VOICE_APP = import.meta.env.VITE_VOICE_APP_NAME || 'campus_copilot_voice'
+
+/** WebSocket URL for live voice (same origin, through the dev proxy locally). */
+export function liveUrl(sessionId, app = VOICE_APP) {
+  const base = BASE.startsWith('http') ? BASE.replace(/^http/, 'ws') : `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}${BASE}`
+  const q = new URLSearchParams({ app_name: app, user_id: USER, session_id: sessionId, modalities: 'AUDIO' })
+  return `${base}/run_live?${q}`
+}
+
+export async function createSession(app = APP) {
+  const r = await fetch(`${BASE}/apps/${app}/users/${USER}/sessions`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
   })
   if (!r.ok) throw new Error(`Couldn't start a session (${r.status})`)

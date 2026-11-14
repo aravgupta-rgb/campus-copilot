@@ -1,13 +1,14 @@
 {
-  "name": "frontend",
+  "name": "campus-copilot-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "VITE_SKIN=bold vite",
+    "build": "VITE_SKIN=${VITE_SKIN:-bold} vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:aurora": "VITE_SKIN=aurora vite --port 5174 --strictPort"
   },
   "dependencies": {
     "react": "^19.1.0",
