@@ -33,6 +33,9 @@ The data formats both sides use are in [CONTRACTS.md](CONTRACTS.md).
    cd agent && adk web
    ```
    Open the address it prints (usually http://localhost:8000) and pick **campus_copilot**.
+   For **voice mode**, pick **campus_copilot_voice** and press the 📞 (or 🎥) button. It needs
+   Vertex AI (see below) and uses `gemini-live-2.5-flash-native-audio` in `us-central1`.
+   To try Decode, paste `demo/sample_finaid_letter.txt` or attach `demo/sample_finaid_letter.png`.
 4. Run the Life Blocker rule tests:
    ```bash
    cd agent && python -m pytest -q
