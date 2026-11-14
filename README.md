@@ -66,3 +66,11 @@ One-time setup on each laptop:
 - Small commits, `git pull` before starting new work.
 - Never commit API keys or `.env`.
 - Contract changes need a heads-up to the other person.
+
+## Deploy (Cloud Run)
+
+Live: https://campus-copilot-261781875474.us-central1.run.app
+
+1. Test locally (`npm run dev:navy` in `frontend/` → http://localhost:5175).
+2. Commit and push.
+3. Run `./deploy.sh` (needs `gcloud auth login`). About 5 minutes, same URL, no downtime.
