@@ -38,7 +38,25 @@ The data formats both sides use are in [CONTRACTS.md](CONTRACTS.md).
    cd agent && python -m pytest -q
    ```
 
-The agent needs `GEMINI_API_KEY` in `.env` (repo root). Python 3.12+ works; 3.14 is tested.
+Python 3.12+ works; 3.14 is tested.
+
+### Gemini access: Vertex AI (default) or AI Studio key (fallback)
+
+**Vertex AI** runs Gemini on our Google Cloud credits, with much higher limits than the free tier.
+One-time setup on each laptop:
+
+1. Install the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install).
+2. Sign in with the Google account that has access to `campus-copilot-514718`:
+   ```bash
+   gcloud auth application-default login
+   gcloud auth application-default set-quota-project campus-copilot-514718
+   ```
+3. In `.env`: `GOOGLE_GENAI_USE_VERTEXAI=TRUE`, `GOOGLE_CLOUD_PROJECT=campus-copilot-514718`,
+   `GOOGLE_CLOUD_LOCATION=global`.
+
+**Fallback:** if Vertex stops working (for example the credit runs out), set
+`GOOGLE_GENAI_USE_VERTEXAI=FALSE` and the agent uses `GEMINI_API_KEY` from AI Studio instead
+(free tier: about 20 requests/day per model; change `GEMINI_MODEL` if you hit a 429).
 
 ## Rules
 
