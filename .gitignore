@@ -31,3 +31,6 @@ firebase-debug.log
 # ADK local chat history
 .adk/
 *.db
+
+# Frontend build output
+dist/
