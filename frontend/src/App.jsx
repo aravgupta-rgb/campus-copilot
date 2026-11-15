@@ -75,6 +75,18 @@ const FEATURES = [
     body: 'Live Google Maps data: whether it is open right now, its hours, phone number and how long the walk is from where you are standing.',
     text: "Where's the Financial Aid Office? I'm at Baskin Engineering.",
   },
+  {
+    n: '05', key: 'answers', title: 'Answers campus questions', tag: 'Campus Answers',
+    body: 'Dropping a class, add codes, holds, housing, deadlines. Ask anything about UCSC and get a plain answer pulled live from official pages with Google Search, with the sources linked.',
+    text: 'How do I drop a class at UCSC, and what is the deadline?',
+  },
+  {
+    n: '06', key: 'calendar', title: 'Books it on your calendar', tag: 'Google Calendar',
+    body: 'Connect Google Calendar once. Copilot plans around the events already there, then books your study and chore blocks with reminders when you say "book it".',
+    text: 'Plan my week around my Google Calendar. To do: [assignment or task] due [day], [assignment or task] due [day]',
+    template: true,
+    connect: true,
+  },
 ]
 
 const SUGGESTIONS = [
@@ -82,6 +94,7 @@ const SUGGESTIONS = [
   { label: 'Decode a sample letter', f: 1 },
   { label: 'Read a sample syllabus', f: 2 },
   { label: "Where's financial aid?", f: 3 },
+  { label: 'How do I drop a class?', f: 4 },
 ]
 
 function useTheme() {
@@ -103,6 +116,7 @@ export default function App() {
   useEffect(() => { document.documentElement.setAttribute('data-skin', SKIN) }, [])
 
   const tryFeature = useCallback(async (f) => {
+    if (f.connect && !cachedToken()) { try { await connectGoogle() } catch { /* still let them type */ } }
     let files = []
     if (f.file) { try { files = [await sampleFile(...f.file)] } catch { /* sample missing: text only */ } }
     setPrefill({ text: f.text, files, selectBlank: Boolean(f.template) })
@@ -150,7 +164,8 @@ export default function App() {
             </h1>
             <p className="hero-sub">
               One AI agent that plans your week around your real energy, explains confusing college letters,
-              reads your syllabus and finds any office on campus. Type, paste a screenshot, or just talk.
+              reads your syllabus, answers campus questions and books it all on your Google Calendar.
+              Type, paste a screenshot, or just talk.
             </p>
             <div className="hero-composer">
               <Composer chat={chat} prefill={prefill} onVoice={() => setVoice(true)} size="hero" placeholder="Ask Campus Copilot anything, or paste a screenshot (⌘V)…" />
@@ -159,14 +174,14 @@ export default function App() {
               </div>
             </div>
             <div className="built-on label">
-              <span>Built on</span><b>Gemini</b><b>Vertex AI</b><b>Google Maps</b><b>Google ADK</b><b>Cloud Run</b>
+              <span>Built on</span><b>Gemini</b><b>Vertex AI</b><b>Google Search</b><b>Google Maps</b><b>Google Calendar</b><b>Google ADK</b><b>Cloud Run</b>
             </div>
           </section>
 
           <section id="features" className="section wrap">
             <div className="section-head">
               <div className="label accent">What it does</div>
-              <h2 className="display">Four jobs<span className="dot">.</span> One agent<span className="dot">.</span></h2>
+              <h2 className="display">Multiple jobs<span className="dot">.</span> All in one agent<span className="dot">.</span></h2>
               <p>You don't pick a tool. Ask in your own words and Campus Copilot decides which ones to use, often several in a row.</p>
             </div>
             <div className="features">
@@ -188,7 +203,7 @@ export default function App() {
             </div>
             <ol className="how">
               <li><span className="num">1</span><h4>You ask</h4><p>Type it, paste a screenshot of a letter or schedule, drop a syllabus PDF, or talk out loud.</p></li>
-              <li><span className="num">2</span><h4>The agent picks tools</h4><p>A Google ADK agent on Gemini decides what to run: the planner, the letter decoder, the syllabus reader or Google Maps.</p></li>
+              <li><span className="num">2</span><h4>The agent picks tools</h4><p>A Google ADK agent on Gemini decides what to run: the planner, the letter decoder, the syllabus reader, Google Search, Google Maps or your Google Calendar.</p></li>
               <li><span className="num">3</span><h4>Code double-checks</h4><p>Every plan is checked for overlaps, energy rules and due dates. Nothing touches your calendar until you approve it.</p></li>
             </ol>
           </section>
@@ -206,7 +221,7 @@ export default function App() {
 
           <footer className="footer wrap">
             <div className="brand"><span className="brand-mark"><Mark /></span><span className="brand-name">Campus Copilot</span></div>
-            <p>Built at Google DevFest UCSC 2026 by Gupta Tech Bros. Always confirm deadlines with the office named in your letter.</p>
+            <p>Built at Google DevFest UCSC 2026 by Aaryav &amp; Arav Gupta (Gupta Tech Bros.). Always confirm deadlines with the office named in your letter.</p>
           </footer>
           <div style={{ height: 40 }} />
         </main>

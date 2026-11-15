@@ -481,3 +481,8 @@ details.more pre { white-space: pre-wrap; font-family: var(--body); font-size: 1
 .cal-btn.on { border-color: var(--green); color: var(--green); }
 .compact-card { padding: 14px 18px; }
 @media (max-width: 860px) { .cal-btn .cal-label { display: none; } .cal-btn { padding: 10px; } }
+
+/* six feature cards: 3 across on desktop */
+.features { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1024px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .features { grid-template-columns: 1fr; } }
