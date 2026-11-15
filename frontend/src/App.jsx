@@ -168,7 +168,7 @@ export default function App() {
               Type, paste a screenshot, or just talk.
             </p>
             <div className="hero-composer">
-              <Composer chat={chat} prefill={prefill} onVoice={() => setVoice(true)} size="hero" placeholder="Ask Campus Copilot anything, or paste a screenshot (⌘V)…" />
+              <Composer chat={chat} prefill={prefill} onSent={() => setPrefill(null)} onVoice={() => setVoice(true)} size="hero" placeholder="Ask Campus Copilot anything, or paste a screenshot (⌘V)…" />
               <div className="suggestions">
                 {SUGGESTIONS.map((s) => <button key={s.label} className="chip-btn" onClick={() => tryFeature(FEATURES[s.f])}>{s.label}</button>)}
               </div>
@@ -229,7 +229,7 @@ export default function App() {
         <main className="wrap chat-view">
           <Thread chat={chat} />
           <div className="composer-dock">
-            <Composer chat={chat} prefill={prefill} onVoice={() => setVoice(true)} placeholder="Reply, ask something new, or paste a screenshot…" autoFocus />
+            <Composer chat={chat} prefill={prefill} onSent={() => setPrefill(null)} onVoice={() => setVoice(true)} placeholder="Reply, ask something new, or paste a screenshot…" autoFocus />
             <div className="hint">Enter to send · Shift+Enter for a new line · Tab jumps to the next [blank] · Drop or paste images and PDFs</div>
           </div>
         </main>

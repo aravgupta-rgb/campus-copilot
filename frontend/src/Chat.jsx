@@ -126,7 +126,7 @@ export function Thread({ chat, compact = false }) {
 }
 
 /** Message box with attach, drag-drop and ⌘V paste. `prefill` lets parents load text/files into it. */
-export function Composer({ chat, prefill, onVoice, placeholder, pasteTarget = 'window', size = 'dock', autoFocus = false }) {
+export function Composer({ chat, prefill, onSent, onVoice, placeholder, pasteTarget = 'window', size = 'dock', autoFocus = false }) {
   const [text, setText] = useState('')
   const [files, setFiles] = useState([])
   const [drag, setDrag] = useState(false)
@@ -218,6 +218,7 @@ export function Composer({ chat, prefill, onVoice, placeholder, pasteTarget = 'w
       return s
     }
     setText(''); setFiles([]); setNote('')
+    onSent?.() // parent drops the loaded suggestion so no box re-fills with it
     await chat.send(t, f)
   }
 
