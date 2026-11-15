@@ -13,9 +13,10 @@ export default defineConfig({
         changeOrigin: true,
         ws: true, // live voice websocket (/run_live)
         rewrite: (p) => p.replace(/^\/api/, ''),
-        // The agent server rejects websocket Origins it doesn't know; this proxy is
-        // local and same-machine, so forward the voice socket without one.
+        // The agent server rejects browser Origins it doesn't know (403). This proxy is
+        // local and same-machine, so forward requests and the voice socket without one.
         configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => proxyReq.removeHeader('origin'))
           proxy.on('proxyReqWs', (proxyReq) => proxyReq.removeHeader('origin'))
         },
       },

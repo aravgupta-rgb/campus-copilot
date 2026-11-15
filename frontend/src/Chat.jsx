@@ -139,8 +139,32 @@ export function Composer({ chat, prefill, onVoice, placeholder, pasteTarget = 'w
     if (!prefill) return
     setText(prefill.text || '')
     setFiles(prefill.files || [])
-    input.current?.focus()
+    // Templates: highlight the first [blank] so the student can just start typing.
+    requestAnimationFrame(() => {
+      const el = input.current
+      if (!el) return
+      el.focus()
+      const t = prefill.text || ''
+      const s = prefill.selectBlank ? t.indexOf('[') : -1
+      const e = s >= 0 ? t.indexOf(']', s) : -1
+      if (s >= 0 && e > s) el.setSelectionRange(s, e + 1)
+      else el.setSelectionRange(t.length, t.length)
+    })
   }, [prefill])
+
+  // Tab jumps to the next [blank] in a template.
+  const nextBlank = (e) => {
+    if (e.key !== 'Tab' || e.shiftKey) return false
+    const el = input.current
+    const s = text.indexOf('[', el.selectionEnd)
+    const s2 = s >= 0 ? s : text.indexOf('[')
+    if (s2 < 0) return false
+    const end = text.indexOf(']', s2)
+    if (end < 0) return false
+    e.preventDefault()
+    el.setSelectionRange(s2, end + 1)
+    return true
+  }
 
   useEffect(() => {
     const el = input.current
@@ -174,8 +198,22 @@ export function Composer({ chat, prefill, onVoice, placeholder, pasteTarget = 'w
   }, [addFiles, pasteTarget])
 
   const submit = async () => {
-    const t = text, f = files
+    // Template clean-up: drop an unfilled optional line, strip the "Optional:" label.
+    let t = text
+      .split('\n')
+      .filter((line) => !(/^\s*Optional:/i.test(line) && /\[[^\]]*\]/.test(line)))
+      .map((line) => line.replace(/^\s*Optional:\s*/i, ''))
+      .join('\n')
+    const f = files
     if (chat.busy || (!t.trim() && !f.length)) return
+    const blank = t.match(/\[(Month Day–Day|class abbreviation|days|start–end time|job|assignment or task|day)\]/)
+    if (blank) {
+      setNote(`Fill in ${blank[0]} first. Tab jumps to the next blank.`)
+      const s = t.indexOf(blank[0])
+      input.current?.setSelectionRange(text.indexOf(blank[0]), text.indexOf(blank[0]) + blank[0].length)
+      input.current?.focus()
+      return s
+    }
     setText(''); setFiles([]); setNote('')
     await chat.send(t, f)
   }
@@ -203,7 +241,10 @@ export function Composer({ chat, prefill, onVoice, placeholder, pasteTarget = 'w
           autoFocus={autoFocus}
           placeholder={placeholder || 'Ask Campus Copilot anything…'}
           onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit() } }}
+          onKeyDown={(e) => {
+            if (nextBlank(e)) return
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit() }
+          }}
           aria-label="Message Campus Copilot"
         />
         {onVoice && <button className="icon-btn voice-btn" onClick={onVoice} aria-label="Talk to Campus Copilot" title="Talk"><MicIcon /></button>}

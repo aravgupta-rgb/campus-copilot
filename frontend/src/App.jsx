@@ -21,7 +21,14 @@ const FEATURES = [
   {
     n: '01', key: 'plan', title: 'Plans your week', tag: 'Life Blocker',
     body: 'Tell it your classes, shifts and gym, or screenshot your work schedule. It fits study and chores where your energy actually is, checks every block for conflicts, and books it when you say so.',
-    text: "Plan my week of Nov 16–22. Classes: CSE 30 MWF 10:40–11:45. Work: bookstore Tue/Thu 2–7pm and it's draining. Gym Mon/Wed 5–6pm. I'm a morning person. To do: essay draft due Friday, problem set due Thursday, laundry, groceries.",
+    text: [
+      'Plan my week of [Month Day–Day].',
+      'Classes: [class abbreviation] [days] [start–end time]',
+      'Work: [job] [days] [start–end time]',
+      "Optional: I'm a [morning/evening] person.",
+      'To do: [assignment or task] due [day], [assignment or task] due [day]',
+    ].join('\n'),
+    template: true,
   },
   {
     n: '02', key: 'decode', title: 'Decodes scary letters', tag: 'Decode',
@@ -70,7 +77,7 @@ export default function App() {
   const tryFeature = useCallback(async (f) => {
     let files = []
     if (f.file) { try { files = [await sampleFile(...f.file)] } catch { /* sample missing: text only */ } }
-    setPrefill({ text: f.text, files })
+    setPrefill({ text: f.text, files, selectBlank: Boolean(f.template) })
     if (!chatting) window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [chatting])
 
@@ -179,7 +186,7 @@ export default function App() {
           <Thread chat={chat} />
           <div className="composer-dock">
             <Composer chat={chat} prefill={prefill} onVoice={() => setVoice(true)} placeholder="Reply, ask something new, or paste a screenshot…" autoFocus />
-            <div className="hint">Enter to send · Shift+Enter for a new line · Drop or paste images and PDFs</div>
+            <div className="hint">Enter to send · Shift+Enter for a new line · Tab jumps to the next [blank] · Drop or paste images and PDFs</div>
           </div>
         </main>
       )}

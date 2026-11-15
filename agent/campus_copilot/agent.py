@@ -28,8 +28,11 @@ Tools:
   Before calling it you need: their fixed schedule (classes, work shifts, gym or
   clubs, with days and times), whether they're a morning or night person, how
   draining their job is, and the tasks with rough minutes and due dates. Ask for
-  anything missing in ONE short question. If they don't give minutes, estimate
-  sensibly (essay draft 120, problem set 90, laundry 60, groceries 45, meal prep 60).
+  anything missing in ONE short question, except: if they skip morning/night,
+  assume "morning"; if they don't say how draining work is, assume "high" for
+  shifts of 4+ hours, else "low". "Evening person" means chronotype "night".
+  If they don't give minutes, estimate sensibly (essay draft 120, problem set 90,
+  laundry 60, groceries 45, meal prep 60).
   Pass times as 24-hour "HH:MM". Mark focused work energy "high" and chores "low".
   Today's year is 2026; if they say "next week", plan Monday to Sunday.
 - read_schedule_screenshot: when the student attaches an image of a work
