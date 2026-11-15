@@ -1,5 +1,69 @@
 // Rich cards for each agent tool result. Each card gets the tool's JSON response
 // (see CONTRACTS.md) and an `ask` function to send a follow-up message.
+import { useState } from 'react'
+import { bookOnGoogle, canUseGoogle, downloadIcs, googleTemplateLink } from './calendar.js'
+
+/** "Book it" panel: Google Calendar API when sign-in is configured, .ics + links always. */
+function BookPanel({ blocks, hrs }) {
+  const [state, setState] = useState({ step: 'idle' })
+  const [showLinks, setShowLinks] = useState(false)
+  const google = canUseGoogle()
+
+  const book = async () => {
+    setState({ step: 'working' })
+    try {
+      const res = await bookOnGoogle(blocks)
+      setState({ step: 'done', ...res })
+    } catch (e) {
+      setState({ step: 'error', msg: e.message })
+    }
+  }
+
+  if (state.step === 'done') {
+    return (
+      <div className="offer booked" role="status">
+        <div>
+          <div className="label accent">Booked on Google Calendar</div>
+          <b>✓ {state.created} blocks added</b>
+        </div>
+        <a className="pill primary" href="https://calendar.google.com/calendar/r/week" target="_blank" rel="noreferrer">Open Google Calendar →</a>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className="offer">
+        <div>
+          <div className="label accent">{state.step === 'error' ? "Didn't book" : 'Looks good?'}</div>
+          <b>{blocks.length} blocks · {hrs % 1 ? hrs.toFixed(1) : hrs} hrs</b>
+          {state.step === 'error' && <p className="kv" style={{ marginTop: 4 }}>{state.msg} You can still use the .ics file.</p>}
+        </div>
+        <div className="card-row" style={{ marginTop: 0 }}>
+          {google && (
+            <button className="pill primary" onClick={book} disabled={state.step === 'working'}>
+              {state.step === 'working' ? 'Booking…' : 'Book it on Google Calendar →'}
+            </button>
+          )}
+          <button className={`pill ${google ? 'ghost' : 'primary'}`} onClick={() => downloadIcs(blocks)}>
+            {google ? 'Download .ics' : 'Add all to my calendar (.ics) →'}
+          </button>
+          <button className="pill ghost" onClick={() => setShowLinks((v) => !v)}>{showLinks ? 'Hide' : 'One by one'}</button>
+        </div>
+      </div>
+      {showLinks && (
+        <ul className="deadlines">
+          {blocks.map((b, i) => (
+            <li key={i}>
+              <span className="d">{shortDate(b.start)}</span>
+              <span>{b.title} · <a href={googleTemplateLink(b)} target="_blank" rel="noreferrer">Add to Google Calendar</a></span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  )
+}
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
@@ -22,7 +86,7 @@ function clock(iso) {
 function minutes(a, b) { return (new Date(b) - new Date(a)) / 60000 }
 
 /* ---------------- Life Blocker ---------------- */
-export function PlanCard({ r, ask }) {
+export function PlanCard({ r }) {
   const blocks = r.proposed_blocks || []
   if (!blocks.length) return null
   const dates = blocks.map((b) => b.start.slice(0, 10)).sort()
@@ -79,13 +143,7 @@ export function PlanCard({ r, ask }) {
         <p className="warn">Didn't fit: {left.map((u) => `${u.task} (${u.minutes_left} min)`).join(', ')}</p>
       )}
 
-      <div className="offer">
-        <div>
-          <div className="label accent">Looks good?</div>
-          <b>{blocks.length} blocks · {hrs % 1 ? hrs.toFixed(1) : hrs} hrs</b>
-        </div>
-        <button className="pill primary" onClick={() => ask('Book these on my Google Calendar.')}>Book it on Google Calendar →</button>
-      </div>
+      <BookPanel blocks={blocks} hrs={hrs} />
     </div>
   )
 }

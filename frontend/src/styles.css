@@ -471,3 +471,8 @@ details.more pre { white-space: pre-wrap; font-family: var(--body); font-size: 1
 [data-skin="bold"][data-palette="navy"] .brand-mark path,
 [data-skin="bold"][data-palette="navy"] .avatar path { fill: #4f7cff; }
 [data-skin="bold"][data-palette="navy"] .orb span { background: radial-gradient(circle at 35% 30%, #c7d7ff, #2f5bd8 55%, #0b1d4a); }
+
+/* booked state */
+.offer.booked { border-color: var(--green); background: var(--green-tint); }
+.offer.booked::after { background: var(--green); }
+.offer.booked .label.accent { color: var(--green); }
