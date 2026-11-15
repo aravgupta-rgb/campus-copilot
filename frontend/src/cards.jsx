@@ -3,16 +3,21 @@
 import { useState } from 'react'
 import { bookOnGoogle, canUseGoogle, downloadIcs, googleTemplateLink } from './calendar.js'
 
-/** "Book it" panel: Google Calendar API when sign-in is configured, .ics + links always. */
-function BookPanel({ blocks, hrs }) {
+/** "Book it" panel: books study blocks, plus (by default) the student's own classes,
+ *  shifts and due dates so the calendar matches what they typed. .ics + links always work. */
+function BookPanel({ blocks, extras, hrs }) {
   const [state, setState] = useState({ step: 'idle' })
   const [showLinks, setShowLinks] = useState(false)
+  const [withExtras, setWithExtras] = useState(true)
   const google = canUseGoogle()
+  const events = withExtras ? [...blocks, ...extras] : blocks
+  const fixedN = extras.filter((e) => e.source === 'fixed').length
+  const dueN = extras.filter((e) => e.source === 'deadline').length
 
   const book = async () => {
     setState({ step: 'working' })
     try {
-      const res = await bookOnGoogle(blocks)
+      const res = await bookOnGoogle(events)
       setState({ step: 'done', ...res })
     } catch (e) {
       setState({ step: 'error', msg: e.message })
@@ -24,7 +29,7 @@ function BookPanel({ blocks, hrs }) {
       <div className="offer booked" role="status">
         <div>
           <div className="label accent">Booked on Google Calendar</div>
-          <b>✓ {state.created} blocks added</b>
+          <b>✓ {state.created} events added</b>
         </div>
         <a className="pill primary" href="https://calendar.google.com/calendar/r/week" target="_blank" rel="noreferrer">Open Google Calendar →</a>
       </div>
@@ -36,16 +41,22 @@ function BookPanel({ blocks, hrs }) {
       <div className="offer">
         <div>
           <div className="label accent">{state.step === 'error' ? "Didn't book" : 'Looks good?'}</div>
-          <b>{blocks.length} blocks · {hrs % 1 ? hrs.toFixed(1) : hrs} hrs</b>
+          <b>{blocks.length} study blocks · {hrs % 1 ? hrs.toFixed(1) : hrs} hrs</b>
+          {extras.length > 0 && (
+            <label className="extras-toggle">
+              <input type="checkbox" checked={withExtras} onChange={(e) => setWithExtras(e.target.checked)} />
+              <span>Also add {[fixedN && `${fixedN} class${fixedN === 1 ? '' : 'es'}/shifts`, dueN && `${dueN} due date${dueN === 1 ? '' : 's'}`].filter(Boolean).join(' and ')}</span>
+            </label>
+          )}
           {state.step === 'error' && <p className="kv" style={{ marginTop: 4 }}>{state.msg} You can still use the .ics file.</p>}
         </div>
         <div className="card-row" style={{ marginTop: 0 }}>
           {google && (
             <button className="pill primary" onClick={book} disabled={state.step === 'working'}>
-              {state.step === 'working' ? 'Booking…' : 'Book it on Google Calendar →'}
+              {state.step === 'working' ? 'Booking…' : `Book ${events.length} on Google Calendar →`}
             </button>
           )}
-          <button className={`pill ${google ? 'ghost' : 'primary'}`} onClick={() => downloadIcs(blocks)}>
+          <button className={`pill ${google ? 'ghost' : 'primary'}`} onClick={() => downloadIcs(events)}>
             {google ? 'Download .ics' : 'Add all to my calendar (.ics) →'}
           </button>
           <button className="pill ghost" onClick={() => setShowLinks((v) => !v)}>{showLinks ? 'Hide' : 'One by one'}</button>
@@ -53,7 +64,7 @@ function BookPanel({ blocks, hrs }) {
       </div>
       {showLinks && (
         <ul className="deadlines">
-          {blocks.map((b, i) => (
+          {events.map((b, i) => (
             <li key={i}>
               <span className="d">{shortDate(b.start)}</span>
               <span>{b.title} · <a href={googleTemplateLink(b)} target="_blank" rel="noreferrer">Add to Google Calendar</a></span>
@@ -88,8 +99,10 @@ function minutes(a, b) { return (new Date(b) - new Date(a)) / 60000 }
 /* ---------------- Life Blocker ---------------- */
 export function PlanCard({ r }) {
   const blocks = r.proposed_blocks || []
-  if (!blocks.length) return null
-  const dates = blocks.map((b) => b.start.slice(0, 10)).sort()
+  const fixed = r.fixed_events || []
+  const dues = r.deadline_events || []
+  if (!blocks.length && !fixed.length) return null
+  const dates = [...blocks, ...fixed, ...dues].map((b) => String(b.start).slice(0, 10)).sort()
   const first = ymd(dates[0])
   const last = ymd(dates[dates.length - 1])
   const span = Math.max(6, Math.round((last - first) / 864e5))
@@ -105,7 +118,7 @@ export function PlanCard({ r }) {
           <h3>Your week, planned<span className="dot">.</span></h3>
         </div>
         <div className="plan-stats">
-          <span>{blocks.length} blocks</span>
+          <span>{blocks.length} study blocks</span>
           <span>{hrs % 1 ? hrs.toFixed(1) : hrs} hrs</span>
           <span>{left.length ? `${left.length} didn't fit` : '0 conflicts'}</span>
         </div>
@@ -114,15 +127,20 @@ export function PlanCard({ r }) {
       <div className="week" role="list">
         {days.map((d) => {
           const key = d.toISOString().slice(0, 10)
-          const mine = blocks.filter((b) => b.start.slice(0, 10) === key)
+          const due = dues.filter((e) => String(e.start).slice(0, 10) === key)
+          const items = [
+            ...fixed.filter((e) => e.start.slice(0, 10) === key).map((e) => ({ ...e, kind: 'fixed' })),
+            ...blocks.filter((b) => b.start.slice(0, 10) === key).map((b) => ({ ...b, kind: 'plan' })),
+          ].sort((a, b) => a.start.localeCompare(b.start))
           return (
-            <div className={`day ${mine.length ? 'has' : ''}`} key={key} role="listitem">
+            <div className={`day ${items.length || due.length ? 'has' : ''}`} key={key} role="listitem">
               <div className="day-top"><span className="dow">{DOW[d.getUTCDay()]}</span><span className="dnum">{d.getUTCDate()}</span></div>
-              {mine.length === 0 && <div className="empty-day">Free</div>}
-              {mine.map((b, i) => {
+              {due.map((e, i) => <div className="due-chip" key={`d${i}`}>{e.title}</div>)}
+              {items.length === 0 && due.length === 0 && <div className="empty-day">Free</div>}
+              {items.map((b, i) => {
                 const energy = (b.description?.match(/\((high|medium|low) energy\)/) || [])[1] || 'low'
                 return (
-                  <div className={`block ${energy}`} key={i} title={b.description}>
+                  <div className={b.kind === 'fixed' ? 'block fixed' : `block ${energy}`} key={i} title={b.description}>
                     <div className="t">{clock(b.start)}–{clock(b.end)}</div>
                     <div className="title">{b.title}</div>
                   </div>
@@ -137,13 +155,15 @@ export function PlanCard({ r }) {
         <span className="chip high">High focus</span>
         <span className="chip medium">Medium</span>
         <span className="chip low">Low energy</span>
+        {fixed.length > 0 && <span className="chip fixed-chip">Your classes &amp; shifts</span>}
+        {dues.length > 0 && <span className="chip due-key">Due dates &amp; exams</span>}
       </div>
 
       {left.length > 0 && (
         <p className="warn">Didn't fit: {left.map((u) => `${u.task} (${u.minutes_left} min)`).join(', ')}</p>
       )}
 
-      <BookPanel blocks={blocks} hrs={hrs} />
+      <BookPanel blocks={blocks} extras={[...fixed, ...dues]} hrs={hrs} />
     </div>
   )
 }

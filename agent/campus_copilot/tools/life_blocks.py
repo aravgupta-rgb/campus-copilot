@@ -136,6 +136,7 @@ async def plan_life_blocks(profile: dict, start: str, end: str) -> dict:
     tasks = normalize_tasks(profile.get("tasks"))
     if not tasks:
         return {"status": "error", "message": "No tasks to schedule. Ask what they need to get done."}
+    real_due = {id(t): t.due for t in tasks}  # the student's actual due dates, for the calendar
     for t in tasks:  # due on or before the first day: allow working on the due day itself
         if t.due and t.due <= start_d:
             t.due = t.due + timedelta(days=1)
@@ -160,8 +161,55 @@ async def plan_life_blocks(profile: dict, start: str, end: str) -> dict:
     return {
         "status": "ok",
         "proposed_blocks": planner.events(),
+        # What the student told us, so the calendar matches their message too.
+        "fixed_events": _fixed_events(busy),
+        "deadline_events": _deadline_events(tasks, real_due, start_d, end_d),
         "unscheduled": planner.unscheduled(),
         "planned_by": planned_by,
         "rejected_suggestions": len(planner.rejected),
         "note": "Preview only. Nothing is on the calendar until the student approves.",
     }
+
+
+_KIND_LABEL = {"work": "Work shift", "gym": "Workout", "other": "Class or commitment"}
+
+
+def _fixed_events(busy) -> list[dict]:
+    """Classes, shifts and gym from the student's message (not ones already on Google Calendar)."""
+    return [
+        {
+            "title": b.title,
+            "start": b.start.isoformat(),
+            "end": b.end.isoformat(),
+            "location": None,
+            "description": f"{_KIND_LABEL.get(b.kind, 'Commitment')} from your schedule",
+            "source": "fixed",
+            "confidence": 1.0,
+        }
+        for b in busy if not b.from_calendar
+    ]
+
+
+def _deadline_events(tasks, real_due, start_d, end_d) -> list[dict]:
+    """All-day markers for due dates and exams inside the planned range."""
+    out = []
+    for t in tasks:
+        due = real_due.get(id(t))
+        if not due or not (start_d <= due <= end_d):
+            continue
+        name = t.title
+        exam = name.lower().startswith("study for ") or any(
+            w in name.lower() for w in ("midterm", "final", "exam", "quiz", "test"))
+        if name.lower().startswith("study for "):
+            name = name[len("study for "):]
+        out.append({
+            "title": f"📝 {name}" if exam else f"Due: {name}",
+            "start": due.isoformat(),
+            "end": (due + timedelta(days=1)).isoformat(),
+            "all_day": True,
+            "location": None,
+            "description": "Exam day" if exam else "Due date",
+            "source": "deadline",
+            "confidence": 1.0,
+        })
+    return out

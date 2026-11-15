@@ -54,7 +54,7 @@ async def get_schedule(start: str, end: str, tool_context: ToolContext) -> dict:
         "status": "ok",
         "count": len(events),
         "events": [{"title": e["title"], "start": e["start"], "end": e["end"]} for e in events[:40]],
-        "as_fixed": [{"title": e["title"], "start": e["start"], "end": e["end"]} for e in timed[:40]],
+        "as_fixed": [{"title": e["title"], "start": e["start"], "end": e["end"], "from_calendar": True} for e in timed[:40]],
     }
 
 
@@ -64,8 +64,9 @@ async def book_events(events: list[dict], tool_context: ToolContext) -> dict:
     Only call after the student clearly asks to book or add the plan to their calendar.
 
     Args:
-        events: The Event objects to book, exactly as plan_life_blocks returned them in
-            proposed_blocks (title, start, end, description).
+        events: The Event objects to book, exactly as plan_life_blocks returned them:
+            proposed_blocks, plus fixed_events and deadline_events so the calendar matches
+            everything the student said (classes, shifts, due dates, exams).
 
     Returns:
         status and created (how many events were added).
@@ -73,17 +74,43 @@ async def book_events(events: list[dict], tool_context: ToolContext) -> dict:
     token = _token(tool_context)
     if not token:
         return NOT_CONNECTED
-    clean = [
-        {"title": e.get("title"), "start": e.get("start"), "end": e.get("end"),
-         "description": (e.get("description") or "") + "\n\nPlanned by Campus Copilot.",
-         "location": e.get("location")}
-        for e in events if e.get("start") and e.get("end")
-    ]
-    if not clean:
+    bodies = [_body(e) for e in events if e.get("start") and e.get("end")]
+    if not bodies:
         return {"status": "error", "message": "No events with start and end times to book."}
+
+    def insert_all():
+        service = gcal.get_google_calendar_service(token)  # Arav's client builder
+        return [service.events().insert(calendarId="primary", body=b).execute().get("id") for b in bodies]
+
     try:
-        ids = await asyncio.to_thread(gcal.create_events, token, clean)
+        ids = await asyncio.to_thread(insert_all)
     except Exception as exc:
         logger.warning("Booking failed: %s", exc)
         return {"status": "error", "message": "Google Calendar didn't accept the booking. Try the Book it button."}
-    return {"status": "ok", "created": len(ids), "titles": [e["title"] for e in clean]}
+    return {"status": "ok", "created": len(ids), "titles": [b["summary"] for b in bodies]}
+
+
+TZ = "America/Los_Angeles"
+# Google Calendar colors: 9 blueberry (study), 8 graphite (classes/shifts), 11 tomato (due dates)
+_COLOR = {"plan": "9", "fixed": "8", "deadline": "11"}
+
+
+def _body(e: dict) -> dict:
+    """Event -> Google Calendar insert body (timed or all-day)."""
+    if e.get("all_day") or "T" not in str(e.get("start")):
+        when = {"start": {"date": str(e["start"])[:10]}, "end": {"date": str(e["end"])[:10]}}
+    else:
+        when = {"start": {"dateTime": e["start"], "timeZone": TZ}, "end": {"dateTime": e["end"], "timeZone": TZ}}
+    body = {
+        "summary": e.get("title") or "Campus Copilot",
+        "description": (e.get("description") or "") + "\n\nPlanned by Campus Copilot.",
+        **when,
+    }
+    if e.get("location"):
+        body["location"] = e["location"]
+    color = _COLOR.get(e.get("source"))
+    if color:
+        body["colorId"] = color
+    if e.get("source") == "plan":
+        body["reminders"] = {"useDefault": False, "overrides": [{"method": "popup", "minutes": 10}]}
+    return body

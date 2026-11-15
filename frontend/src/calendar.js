@@ -70,19 +70,23 @@ export async function bookOnGoogle(blocks) {
   const token = await getToken()
   const links = []
   for (const b of blocks) {
-    const energy = energyOf(b)
+    const allDay = isAllDay(b)
+    const body = {
+      summary: b.title,
+      description: `${b.description || ''}\n\nPlanned by Campus Copilot.`,
+      start: allDay ? { date: b.start.slice(0, 10) } : { dateTime: b.start, timeZone: TZ },
+      end: allDay ? { date: b.end.slice(0, 10) } : { dateTime: b.end, timeZone: TZ },
+      // study blocks by energy; the student's classes/shifts graphite; due dates tomato
+      colorId: b.source === 'fixed' ? '8' : b.source === 'deadline' ? '11' : COLOR[energyOf(b)],
+      source: { title: 'Campus Copilot', url: window.location.origin },
+    }
+    if (b.source !== 'fixed' && b.source !== 'deadline') {
+      body.reminders = { useDefault: false, overrides: [{ method: 'popup', minutes: 10 }] }
+    }
     const r = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        summary: b.title,
-        description: `${b.description || ''}\n\nPlanned by Campus Copilot.`,
-        start: { dateTime: b.start, timeZone: TZ },
-        end: { dateTime: b.end, timeZone: TZ },
-        colorId: COLOR[energy],
-        reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 10 }] },
-        source: { title: 'Campus Copilot', url: window.location.origin },
-      }),
+      body: JSON.stringify(body),
     })
     if (r.status === 401) { cached = null; throw new Error('Google sign-in expired. Tap Book it again.') }
     if (!r.ok) {
@@ -95,7 +99,9 @@ export async function bookOnGoogle(blocks) {
 }
 
 /* ---------------- no-setup fallbacks ---------------- */
+function isAllDay(b) { return Boolean(b.all_day) || !String(b.start).includes('T') }
 const icsStamp = (iso) => new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+const icsDate = (d) => String(d).slice(0, 10).replace(/-/g, '')
 const esc = (s) => String(s || '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, (m) => `\\${m}`)
 
 /** Downloads one .ics file with every block (opens in Google, Apple or Outlook Calendar). */
@@ -103,10 +109,16 @@ export function downloadIcs(blocks, name = 'campus-copilot-week.ics') {
   const now = icsStamp(new Date().toISOString())
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Campus Copilot//Life Blocker//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH']
   blocks.forEach((b, i) => {
+    const allDay = isAllDay(b)
     lines.push('BEGIN:VEVENT', `UID:cc-${Date.now()}-${i}@campus-copilot`, `DTSTAMP:${now}`,
-      `DTSTART:${icsStamp(b.start)}`, `DTEND:${icsStamp(b.end)}`, `SUMMARY:${esc(b.title)}`,
-      `DESCRIPTION:${esc((b.description || '') + ' · Planned by Campus Copilot')}`,
-      'BEGIN:VALARM', 'TRIGGER:-PT10M', 'ACTION:DISPLAY', `DESCRIPTION:${esc(b.title)}`, 'END:VALARM', 'END:VEVENT')
+      allDay ? `DTSTART;VALUE=DATE:${icsDate(b.start)}` : `DTSTART:${icsStamp(b.start)}`,
+      allDay ? `DTEND;VALUE=DATE:${icsDate(b.end)}` : `DTEND:${icsStamp(b.end)}`,
+      `SUMMARY:${esc(b.title)}`,
+      `DESCRIPTION:${esc((b.description || '') + ' · Planned by Campus Copilot')}`)
+    if (!allDay && b.source !== 'fixed') {
+      lines.push('BEGIN:VALARM', 'TRIGGER:-PT10M', 'ACTION:DISPLAY', `DESCRIPTION:${esc(b.title)}`, 'END:VALARM')
+    }
+    lines.push('END:VEVENT')
   })
   lines.push('END:VCALENDAR')
   const url = URL.createObjectURL(new Blob([lines.join('\r\n')], { type: 'text/calendar' }))
@@ -119,7 +131,7 @@ export function downloadIcs(blocks, name = 'campus-copilot-week.ics') {
 export function googleTemplateLink(b) {
   const q = new URLSearchParams({
     action: 'TEMPLATE', text: b.title,
-    dates: `${icsStamp(b.start)}/${icsStamp(b.end)}`,
+    dates: isAllDay(b) ? `${icsDate(b.start)}/${icsDate(b.end)}` : `${icsStamp(b.start)}/${icsStamp(b.end)}`,
     details: `${b.description || ''}\nPlanned by Campus Copilot.`, ctz: TZ,
   })
   return `https://calendar.google.com/calendar/render?${q}`

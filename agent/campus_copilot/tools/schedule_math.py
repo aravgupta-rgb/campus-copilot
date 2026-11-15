@@ -39,6 +39,7 @@ class Busy:
     start: datetime
     end: datetime
     kind: str  # "work" | "gym" | "other"
+    from_calendar: bool = False  # already on Google Calendar: plan around it, never re-book it
 
 
 @dataclass
@@ -133,11 +134,12 @@ def expand_fixed(fixed: list | None, start_d: date, end_d: date) -> list[Busy]:
         if not s:
             continue
         title, kind = str(item.get("title") or "Busy"), kind_of(item)
+        cal = bool(item.get("from_calendar"))
         if "T" in str(s):  # one-off event, e.g. from Google Calendar
             bs = parse_dt(s)
             be = parse_dt(e) if e else bs + timedelta(hours=1)
             if be.date() >= start_d and bs.date() <= end_d:
-                out.append(Busy(title, bs, be, kind))
+                out.append(Busy(title, bs, be, kind, cal))
             continue
         days = {str(d)[:3].title() for d in (item.get("days") or DAYS)}
         st = parse_hhmm(s)
@@ -149,7 +151,7 @@ def expand_fixed(fixed: list | None, start_d: date, end_d: date) -> list[Busy]:
                 be = datetime.combine(d, et, TZ) if et else bs + timedelta(hours=1)
                 if be <= bs:
                     be += timedelta(days=1)
-                out.append(Busy(title, bs, be, kind))
+                out.append(Busy(title, bs, be, kind, cal))
             d += timedelta(days=1)
     return sorted(out, key=lambda b: b.start)
 

@@ -36,8 +36,10 @@ Tools:
   they told you and mention once that tapping Connect Calendar lets you see their
   real calendar.
 - book_events: when the student says "book it", "add it to my calendar" or
-  similar after a plan. Pass the proposed_blocks from the most recent
-  plan_life_blocks result exactly as they were returned. On "ok", confirm how
+  similar after a plan. Pass ALL events from the most recent plan_life_blocks
+  result, exactly as returned: proposed_blocks + fixed_events + deadline_events,
+  so their calendar has their classes, shifts, due dates and exams too (unless
+  they say "just the study blocks"). On "ok", confirm how
   many were added. On "not_connected", tell them to tap Connect Calendar (top of
   the page) or the Book it button under the plan.
 - plan_life_blocks: when the student wants help planning their week, studying,
@@ -51,7 +53,10 @@ Tools:
   shifts of 4+ hours, else "low". "Evening person" means chronotype "night".
   If they don't give minutes, estimate sensibly (essay draft 120, problem set 90,
   laundry 60, groceries 45, meal prep 60).
-  Pass times as 24-hour "HH:MM". Mark focused work energy "high" and chores "low".
+  Pass times as 24-hour "HH:MM". Times without AM/PM ("240-345", "2-7") are
+  daytime: 8:00-11:59 stay AM, 1-7 mean PM ("240-345" = 14:40-15:45). Mark
+  focused work energy "high" and chores "low". "Midterm/exam on Wednesday" is a
+  task "Study for <course> <exam>" due that day (about 300 minutes).
   Today's year is 2026; if they say "next week", plan Monday to Sunday.
 - read_schedule_screenshot: when the student attaches an image of a work
   schedule, class schedule or calendar. Call it, then show what you read as a
@@ -104,6 +109,8 @@ How to present a decoded letter (keep it scannable):
 
 How to present a plan:
 - Group blocks by day, earliest first, like "Tue 9:00-11:00 AM: Essay draft".
+  Mention the student's own classes/shifts and due dates on those days briefly
+  ("Wed: CSE 30 2:40-3:45 PM, 📝 Midterm") so it reads like their real week.
   Add the one-line reason for the first few blocks.
 - If "unscheduled" is not empty, say what didn't fit and suggest a fix
   (shorter blocks, dropping a gym day, or moving a deadline).

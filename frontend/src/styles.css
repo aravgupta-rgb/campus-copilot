@@ -486,3 +486,13 @@ details.more pre { white-space: pre-wrap; font-family: var(--body); font-size: 1
 .features { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 1024px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .features { grid-template-columns: 1fr; } }
+
+/* plan: student's own classes/shifts and due dates */
+.block.fixed { background: transparent; border: 1px dashed var(--line-strong); border-left: 3px solid var(--faint); opacity: 0.85; }
+.block.fixed .title { font-weight: 500; }
+.due-chip { font-family: var(--label); font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; color: var(--accent-ink); background: var(--accent-tint); border: 1px solid var(--accent-line); border-radius: 8px; padding: 4px 8px; margin-top: 4px; }
+.chip.fixed-chip { border: 1px dashed var(--line-strong); background: transparent; }
+.chip.due-key { background: var(--accent-tint); color: var(--accent-ink); }
+.extras-toggle { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 14.5px; color: var(--muted); cursor: pointer; }
+.extras-toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
+[data-skin="aurora"] .block.fixed { box-shadow: none; }

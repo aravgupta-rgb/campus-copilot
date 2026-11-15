@@ -115,3 +115,28 @@ def test_too_little_time_reports_unscheduled():
     _, p = plan(busy_week)
     left = p.unscheduled()
     assert left and left[0]["task"] == "Thesis" and left[0]["minutes_left"] > 0
+
+
+def test_plan_returns_fixed_and_deadlines_but_not_calendar_events(monkeypatch):
+    """The plan echoes what the student told us (classes, due dates) for booking."""
+    import asyncio
+    from campus_copilot.tools import life_blocks as lb
+
+    async def no_gemini(*a, **k):
+        raise RuntimeError("offline")  # force the backup scheduler: no network in tests
+
+    monkeypatch.setattr(lb, "_ask_gemini", no_gemini)
+    profile = {
+        "fixed": [
+            {"title": "CSE 30", "days": ["Mon", "Wed", "Fri"], "start": "14:40", "end": "15:45"},
+            {"title": "Dentist", "start": "2026-11-17T09:00:00-08:00", "end": "2026-11-17T10:00:00-08:00", "from_calendar": True},
+        ],
+        "chronotype": "morning",
+        "tasks": [{"title": "Study for CSE 30 Midterm", "minutes": 180, "energy": "high", "due": "2026-11-18"},
+                  {"title": "Essay", "minutes": 60, "energy": "high", "due": "2026-11-20"}],
+    }
+    r = asyncio.run(lb.plan_life_blocks(profile, "2026-11-15", "2026-11-22"))
+    fixed_titles = [e["title"] for e in r["fixed_events"]]
+    assert fixed_titles.count("CSE 30") == 3 and "Dentist" not in fixed_titles
+    assert {"title": "📝 CSE 30 Midterm", "start": "2026-11-18"}.items() <= r["deadline_events"][0].items()
+    assert r["deadline_events"][1]["title"] == "Due: Essay" and r["deadline_events"][1]["all_day"] is True

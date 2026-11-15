@@ -32,16 +32,44 @@ def test_schedule_uses_token_and_formats_fixed(monkeypatch):
     assert [f["title"] for f in r["as_fixed"]] == ["Dentist"]
 
 
-def test_book_skips_incomplete_and_reports_errors(monkeypatch):
-    monkeypatch.setattr(ct.gcal, "create_events", lambda token, evs: [f"id{i}" for i, _ in enumerate(evs)])
-    ok = asyncio.run(ct.book_events(
-        [{"title": "Essay", "start": "2026-11-17T09:00:00-08:00", "end": "2026-11-17T11:00:00-08:00"}, {"title": "no times"}],
-        FakeCtx({ct.TOKEN_KEY: "tok"})))
-    assert ok == {"status": "ok", "created": 1, "titles": ["Essay"]}
+class FakeService:
+    """Records inserted bodies like googleapiclient's events().insert(...).execute()."""
 
-    def boom(token, evs):
-        raise RuntimeError("401")
+    def __init__(self, fail=False):
+        self.bodies, self.fail = [], fail
 
-    monkeypatch.setattr(ct.gcal, "create_events", boom)
+    def events(self):
+        return self
+
+    def insert(self, calendarId, body):
+        self.bodies.append(body)
+        return self
+
+    def execute(self):
+        if self.fail:
+            raise RuntimeError("401")
+        return {"id": f"id{len(self.bodies)}"}
+
+
+def test_book_everything_timed_and_all_day(monkeypatch):
+    svc = FakeService()
+    monkeypatch.setattr(ct.gcal, "get_google_calendar_service", lambda token: svc)
+    events = [
+        {"title": "Study", "start": "2026-11-16T07:30:00-08:00", "end": "2026-11-16T09:00:00-08:00", "source": "plan"},
+        {"title": "CSE 30", "start": "2026-11-16T14:40:00-08:00", "end": "2026-11-16T15:45:00-08:00", "source": "fixed"},
+        {"title": "📝 CSE 30 Midterm", "start": "2026-11-18", "end": "2026-11-19", "all_day": True, "source": "deadline"},
+        {"title": "no times"},
+    ]
+    ok = asyncio.run(ct.book_events(events, FakeCtx({ct.TOKEN_KEY: "tok"})))
+    assert ok["status"] == "ok" and ok["created"] == 3
+    study, cls, exam = svc.bodies
+    assert study["start"] == {"dateTime": "2026-11-16T07:30:00-08:00", "timeZone": "America/Los_Angeles"}
+    assert study["colorId"] == "9" and study["reminders"]["overrides"][0]["minutes"] == 10
+    assert cls["colorId"] == "8" and "reminders" not in cls
+    assert exam["start"] == {"date": "2026-11-18"} and exam["end"] == {"date": "2026-11-19"} and exam["colorId"] == "11"
+
+
+def test_book_reports_errors(monkeypatch):
+    monkeypatch.setattr(ct.gcal, "get_google_calendar_service", lambda token: FakeService(fail=True))
     bad = asyncio.run(ct.book_events([{"title": "Essay", "start": "s", "end": "e"}], FakeCtx({ct.TOKEN_KEY: "tok"})))
     assert bad["status"] == "error"
