@@ -3,7 +3,10 @@
 //    The access token stays in this browser tab; the agent never sees it.
 // 2) Fallbacks that need no setup: a .ics file and per-event Google Calendar links.
 
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+// OAuth Web client ID (public by design; the client *secret* is never used or stored here).
+// Authorized JS origins: the Cloud Run URL and localhost:5173/5175.
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  || '261781875474-fcg86jt9v0q4607g1sadb6ndlrjqlnrf.apps.googleusercontent.com'
 const SCOPE = 'https://www.googleapis.com/auth/calendar.events'
 const TZ = 'America/Los_Angeles'
 // Google Calendar event colors: 9 = blueberry (focus), 5 = banana (medium), 2 = sage (low)
