@@ -1,4 +1,5 @@
 // Talks to the ADK agent server (adk web / adk api_server locally, Cloud Run in production).
+import { cachedToken } from './calendar.js'
 const BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
 export const APP = import.meta.env.VITE_APP_NAME || 'campus_copilot'
 
@@ -47,6 +48,7 @@ export function fileToPart(file) {
  * onEvent receives {type: 'call', name} | {type: 'result', name, response} | {type: 'text', text}
  */
 export async function sendMessage(sessionId, text, files, onEvent) {
+  const googleToken = cachedToken()
   const parts = []
   for (const f of files) parts.push(await fileToPart(f))
   if (text.trim()) parts.push({ text: text.trim() })
@@ -57,6 +59,8 @@ export async function sendMessage(sessionId, text, files, onEvent) {
     body: JSON.stringify({
       appName: APP, userId: USER, sessionId,
       newMessage: { role: 'user', parts }, streaming: false,
+      // Google Calendar token for this request only (ADK never stores temp: state).
+      ...(googleToken ? { stateDelta: { 'temp:google_token': googleToken } } : {}),
     }),
   })
   if (!r.ok || !r.body) throw new Error(`The agent didn't respond (${r.status})`)

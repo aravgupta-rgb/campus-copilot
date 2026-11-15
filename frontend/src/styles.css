@@ -476,3 +476,8 @@ details.more pre { white-space: pre-wrap; font-family: var(--body); font-size: 1
 .offer.booked { border-color: var(--green); background: var(--green-tint); }
 .offer.booked::after { background: var(--green); }
 .offer.booked .label.accent { color: var(--green); }
+
+/* Connect Calendar button + compact cards */
+.cal-btn.on { border-color: var(--green); color: var(--green); }
+.compact-card { padding: 14px 18px; }
+@media (max-width: 860px) { .cal-btn .cal-label { display: none; } .cal-btn { padding: 10px; } }

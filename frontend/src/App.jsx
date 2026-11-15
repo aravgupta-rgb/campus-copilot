@@ -2,8 +2,36 @@ import { useCallback, useEffect, useState } from 'react'
 import { Composer, Mark, MicIcon, Thread, useChat } from './Chat.jsx'
 import SideAssistant from './SideAssistant.jsx'
 import VoiceMode from './VoiceMode.jsx'
+import { cachedToken, connectGoogle } from './calendar.js'
 
 const SKIN = import.meta.env.VITE_SKIN || 'bold'
+
+const CalIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="3" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+)
+
+/** Connect the student's Google Calendar so the agent can read it and book plans. */
+function CalendarButton() {
+  const [on, setOn] = useState(() => Boolean(cachedToken()))
+  const [state, setState] = useState('idle')
+  useEffect(() => {
+    const f = () => setOn(Boolean(cachedToken()))
+    window.addEventListener('cc-calendar', f)
+    return () => window.removeEventListener('cc-calendar', f)
+  }, [])
+  const connect = async () => {
+    if (on || state === 'busy') return
+    setState('busy')
+    try { await connectGoogle(); setState('idle') } catch { setState('error') }
+  }
+  const label = on ? 'Calendar connected' : state === 'busy' ? 'Connecting…' : state === 'error' ? 'Try again' : 'Connect Calendar'
+  return (
+    <button className={`pill ghost cal-btn ${on ? 'on' : ''}`} onClick={connect} aria-pressed={on}
+      title={on ? 'Copilot can read your Google Calendar and book plans' : 'Let Copilot plan around your real Google Calendar and book for you'}>
+      <CalIcon /><span className="cal-label">{label}</span>
+    </button>
+  )
+}
 
 const Sun = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
@@ -100,6 +128,7 @@ export default function App() {
             </nav>
           )}
           <div className="nav-actions">
+            <CalendarButton />
             <button className="icon-btn" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
               {theme === 'dark' ? <Sun /> : <Moon />}
             </button>

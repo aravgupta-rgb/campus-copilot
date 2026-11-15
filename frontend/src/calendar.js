@@ -45,12 +45,24 @@ async function getToken() {
       callback: (resp) => {
         if (resp.error) return reject(new Error(resp.error_description || resp.error))
         cached = { token: resp.access_token, expires: Date.now() + (resp.expires_in || 3000) * 1000 }
+        window.dispatchEvent(new Event('cc-calendar'))
         resolve(resp.access_token)
       },
       error_callback: (err) => reject(new Error(err?.type === 'popup_closed' ? 'Sign-in was closed before finishing.' : (err?.message || 'Google sign-in failed.'))),
     })
     client.requestAccessToken({ prompt: cached ? '' : 'consent' })
   })
+}
+
+/** Signs in with Google (popup) so the agent can read and book the calendar. */
+export async function connectGoogle() {
+  await getToken()
+  window.dispatchEvent(new Event('cc-calendar'))
+}
+
+/** The current token if the student is connected (no popup), else null. */
+export function cachedToken() {
+  return cached && cached.expires > Date.now() + 60_000 ? cached.token : null
 }
 
 /** Creates every block in the student's primary Google Calendar. Returns { created, links }. */

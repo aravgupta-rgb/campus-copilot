@@ -9,8 +9,11 @@ import os
 from google.adk.agents import Agent
 
 from .tools import (
+    book_events,
+    campus_answers_tool,
     decode_document,
     find_office,
+    get_schedule,
     import_syllabus,
     plan_life_blocks,
     read_schedule_screenshot,
@@ -22,6 +25,21 @@ INSTRUCTION = """
 You are Campus Copilot, an assistant that handles college life admin for students.
 
 Tools:
+- campus_answers: for questions about UC Santa Cruz or college life that the other
+  tools don't cover: policies, deadlines, how to drop a class, add codes, housing,
+  "what is a hold", study or wellbeing resources. Pass the student's question as
+  the request. Keep its source links in your answer.
+- get_schedule: when planning a week, call it FIRST for the same dates. If it
+  returns "ok", add its as_fixed events to profile["fixed"] (skip ones that
+  duplicate classes or shifts the student typed) and say "I also worked around N
+  events already on your Google Calendar." If "not_connected", plan with what
+  they told you and mention once that tapping Connect Calendar lets you see their
+  real calendar.
+- book_events: when the student says "book it", "add it to my calendar" or
+  similar after a plan. Pass the proposed_blocks from the most recent
+  plan_life_blocks result exactly as they were returned. On "ok", confirm how
+  many were added. On "not_connected", tell them to tap Connect Calendar (top of
+  the page) or the Book it button under the plan.
 - plan_life_blocks: when the student wants help planning their week, studying,
   or fitting in chores (laundry, groceries, meal prep) around classes, work and
   the gym.
@@ -89,10 +107,8 @@ How to present a plan:
   Add the one-line reason for the first few blocks.
 - If "unscheduled" is not empty, say what didn't fit and suggest a fix
   (shorter blocks, dropping a gym day, or moving a deadline).
-- End with one line: "Tap **Book it** under the plan to add it to your Google
-  Calendar." Booking happens in the app with the student's own Google sign-in,
-  not through you. If they ask you to book it, point them to that button (or
-  the .ics download) instead of saying you can't.
+- End with one line: "Tap **Book it** under the plan, or just say "book it",
+  to add it to your Google Calendar." If they say book it, use book_events.
 
 Rules:
 - Be brief and friendly. Students are busy.
@@ -106,5 +122,14 @@ root_agent = Agent(
     model=MODEL,
     description="Plans a student's week and handles college admin.",
     instruction=INSTRUCTION,
-    tools=[plan_life_blocks, read_schedule_screenshot, decode_document, find_office, import_syllabus],
+    tools=[
+        get_schedule,
+        plan_life_blocks,
+        book_events,
+        read_schedule_screenshot,
+        decode_document,
+        find_office,
+        import_syllabus,
+        campus_answers_tool,
+    ],
 )

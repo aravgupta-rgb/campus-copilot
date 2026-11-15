@@ -303,8 +303,42 @@ export function ScheduleReadCard({ r }) {
   )
 }
 
+/* ---------------- Calendar (Arav's tools) ---------------- */
+export function CalendarReadCard({ r }) {
+  if (r.status !== 'ok') return null
+  return (
+    <div className="card compact-card">
+      <div className="label accent">Google Calendar · read</div>
+      <p className="kv" style={{ marginTop: 6 }}>
+        {r.count ? `Worked around ${r.count} event${r.count === 1 ? '' : 's'} already on your calendar.` : 'Your calendar is clear for these days.'}
+      </p>
+      {r.events?.length > 0 && (
+        <div className="card-row">
+          {r.events.slice(0, 6).map((e, i) => <span className="chip" key={i}>{shortDate(e.start)} · {e.title}</span>)}
+          {r.events.length > 6 && <span className="chip">+{r.events.length - 6} more</span>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function BookedCard({ r }) {
+  if (r.status !== 'ok') return null
+  return (
+    <div className="offer booked" role="status">
+      <div>
+        <div className="label accent">Booked on Google Calendar</div>
+        <b>✓ {r.created} block{r.created === 1 ? '' : 's'} added</b>
+      </div>
+      <a className="pill primary" href="https://calendar.google.com/calendar/r/week" target="_blank" rel="noreferrer">Open Google Calendar →</a>
+    </div>
+  )
+}
+
 export const CARDS = {
+  get_schedule: CalendarReadCard,
   plan_life_blocks: PlanCard,
+  book_events: BookedCard,
   decode_document: DecodeCard,
   find_office: OfficeCard,
   import_syllabus: SyllabusCard,
@@ -312,9 +346,12 @@ export const CARDS = {
 }
 
 export const TOOL_STATUS = {
+  get_schedule: 'Reading your Google Calendar',
   plan_life_blocks: 'Planning your week around your energy',
+  book_events: 'Booking it on Google Calendar',
   decode_document: 'Decoding your letter',
   find_office: 'Checking Google Maps',
   import_syllabus: 'Reading your syllabus',
   read_schedule_screenshot: 'Reading your schedule',
+  campus_answers: 'Searching UCSC sources',
 }

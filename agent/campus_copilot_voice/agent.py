@@ -13,7 +13,7 @@ from google.adk.agents import Agent
 from google.adk.models import Gemini
 
 from campus_copilot.agent import INSTRUCTION as TEXT_INSTRUCTION
-from campus_copilot.tools import decode_document, find_office, plan_life_blocks
+from campus_copilot.tools import campus_answers_tool, decode_document, find_office, plan_life_blocks
 
 LIVE_MODEL = os.getenv("GEMINI_LIVE_MODEL", "gemini-live-2.5-flash-native-audio")
 LIVE_LOCATION = os.getenv("GEMINI_LIVE_LOCATION", "us-central1")
@@ -39,5 +39,5 @@ root_agent = Agent(
     model=Gemini(model=LIVE_MODEL, client_kwargs={"location": LIVE_LOCATION}),
     description="Voice version of Campus Copilot: plan your week and decode letters by talking.",
     instruction=VOICE_RULES + "\n\n" + TEXT_INSTRUCTION,
-    tools=[plan_life_blocks, decode_document, find_office],
+    tools=[plan_life_blocks, decode_document, find_office, campus_answers_tool],
 )
