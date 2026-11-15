@@ -136,7 +136,10 @@ export function Composer({ chat, prefill, onVoice, placeholder, pasteTarget = 'w
   const box = useRef(null)
 
   useEffect(() => {
-    if (!prefill) return
+    // A suggestion fills a box once. After it's sent, the chat view's box must not
+    // pick the same question up again.
+    if (!prefill || prefill.used) return
+    prefill.used = true
     setText(prefill.text || '')
     setFiles(prefill.files || [])
     // Templates: highlight the first [blank] so the student can just start typing.

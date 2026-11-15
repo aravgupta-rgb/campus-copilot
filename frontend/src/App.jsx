@@ -221,7 +221,7 @@ export default function App() {
 
           <footer className="footer wrap">
             <div className="brand"><span className="brand-mark"><Mark /></span><span className="brand-name">Campus Copilot</span></div>
-            <p>Built at Google DevFest UCSC 2026 by Aaryav &amp; Arav Gupta (Gupta Tech Bros.). Always confirm deadlines with the office named in your letter.</p>
+            <p>Built at Google DevFest UCSC 2026 by Aaryav &amp; Arav Gupta (Gupta Tech Bros)</p>
           </footer>
           <div style={{ height: 40 }} />
         </main>
